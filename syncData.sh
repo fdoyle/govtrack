@@ -10,4 +10,4 @@ rsync -avz --delete --delete-excluded --exclude **/text-versions/ \
 
 
 rsync -avz --delete --delete-excluded --exclude **/text-versions/ \
-		govtrack.us::govtrackdata/congress-legislators .
+		govtrack.us::govtrackdata/congress-legislators/*.csv ./congress-legislators
