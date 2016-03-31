@@ -1,17 +1,19 @@
 # govtrack
 fill a graph database with some US congress voting data
 
-run
+interesting queries:
 
->rsync -avz --delete --delete-excluded --exclude **/text-versions/ \
->		govtrack.us::govtrackdata/congress/113/bills .
-
-in root directory to pull down data. 
-
+bills introduced by democrats:
+>MATCH (bill:BILL)<-[:SPONSOR]-(legislator:LEGISLATOR)-[:MEMBER]->(party:PARTY {party:"Democrat"}) RETURN bill
 
 todo:
- - load congressmen/senators
  - load voting data
  - add some organizations (senate, house; dem, rep; committees)
  - add some tags (already in bill data, ex: all bills dealing with taxation, military)
  - add some express magic to get an api going
+
+done:
+- load legislation
+- load legislators
+- show sponsorship
+- legislator party
