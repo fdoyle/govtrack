@@ -10,7 +10,11 @@ var INSERT_BILL =
     "CREATE (bill:BILL {data}) " +
     "CREATE (sponsor)-[:SPONSOR]->(bill) " +
     "RETURN bill";
-var QUERY_INSERT_LEGISLATOR = 'CREATE (legislator:LEGISLATOR {data}) RETURN legislator';
+var QUERY_INSERT_LEGISLATOR =
+"CREATE (legislator:LEGISLATOR {data}) " +
+"MERGE (party:PARTY {party:{partyName}}) " +
+"CREATE (legislator)-[rel:MEMBER]->(party) "  +
+"RETURN legislator";
 
 var db = new neo4j.GraphDatabase('http://neo4j:p4ssw0rd@localhost:7474');
 
@@ -19,7 +23,9 @@ function setupDatabase() {
         clearDatabase,
         loadLegislators,
         loadBills
-    ])
+    ], function(err, data) {
+        if(err) throw err;
+    })
 }
 
 //Clear database
@@ -67,7 +73,7 @@ function loadBillIntoDatabase(billJson, callback) {
         query: INSERT_BILL,
         params: {
             data: billDao,
-            billId: billDao.introducedByThomasId
+            billId: billDao.sponsorThomasId
         }
     }, callback);
 }
@@ -84,7 +90,7 @@ function transformBillForDatabase(bill) {
     billDao.officialTitle = bill.officialTitle;
     billDao.url = bill.url;
     billDao.introducedDate = bill.introduced_at;
-    billDao.introducedByThomasId = bill.sponsor.thomas_id;
+    billDao.sponsorThomasId = bill.sponsor.thomas_id;
     return billDao;
 }
 
@@ -151,7 +157,8 @@ function loadLegislatorIntoDatabase(legislator, callback) {
     db.cypher({
         query: QUERY_INSERT_LEGISLATOR,
         params: {
-            data: legislatorDao
+            data: legislatorDao,
+            partyName: legislator.party
         }
     }, callback);
 }
