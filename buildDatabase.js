@@ -3,13 +3,24 @@ var fs = require('fs');
 var neo4j = require('neo4j');
 var async = require('async');
 
-
+var QUERY_CLEAR_DB = 'MATCH (n) DETACH DELETE n';
 var INSERT_BILL = 'CREATE (bill:BILL {data}) RETURN bill';
 
+//Clear database
+function clearDatabase(callback) {
+    console.log("Clearing Database");
+    db.cypher({
+        query:QUERY_CLEAR_DB
+    },callback);
+}
+
+
+//LOAD BILLS
 function getBillFiles(callback) {
-    console.log("getting bill files");
+    console.log("Searching for bill files");
     glob("bills/hr/**/data.json", callback);
 }
+
 
 function readDataForFile(fileName, callback) {
     fs.readFile(fileName, {encoding:"utf-8", autoClose:true}, function(err, dataString) {
@@ -22,27 +33,23 @@ function readDataForFile(fileName, callback) {
 }
 
 function readDataForFiles(fileList, callback) {
-    console.log("reading data for files");
-    console.log("number of files: " + fileList.length);
+    console.log("Reading data for " + fileList.length + " files");
     async.mapSeries(fileList, async.ensureAsync(readDataForFile), callback);
 }
 
 function loadBillsIntoDatabase(billList, callback) {
-    console.log("loading bills into database");
+    console.log("Loading bills into database");
     async.mapSeries(billList, async.ensureAsync(loadBillIntoDatabase), callback);
 }
 
 function loadBillIntoDatabase(billJson, callback) {
     var billDao = transformBillForDatabase(billJson);
-    console.log(JSON.stringify(billDao));
     db.cypher({
         query:INSERT_BILL,
         params: {
             data:billDao
         }
-    }, function(err, data) {
-        callback(err, data);
-    });
+    }, callback);
 }
 
 function transformBillForDatabase(bill) {
@@ -60,13 +67,23 @@ function transformBillForDatabase(bill) {
     return billDao;
 }
 
+function loadBills(callback) {
+    console.log("Loading Bills")
+    async.waterfall([
+        getBillFiles,
+        readDataForFiles,
+        loadBillsIntoDatabase
+    ], callback);
+}
+
 var db = new neo4j.GraphDatabase('http://neo4j:p4ssw0rd@localhost:7474');
 
-async.waterfall([
-    getBillFiles,
-    readDataForFiles,
-    loadBillsIntoDatabase
-], function(err, results) {
-    if(err) throw err;
-    console.log("done");
-})
+
+function setupDatabase() {
+    async.series([
+        clearDatabase,
+        loadBills
+    ])
+}
+
+setupDatabase();
