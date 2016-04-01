@@ -4,7 +4,7 @@ fill a graph database with some US congress voting data
 interesting queries:
 
 Bills introduced by democrats:
->MATCH (bill:BILL)<-[:SPONSOR]-(legislator:LEGISLATOR)-[:MEMBER]->(party:PARTY {party:"Democrat"}) 
+>MATCH (bill:BILL)<-[:SPONSOR]-(legislator:LEGISLATOR)-[:MEMBER]->(party:PARTY {party:"Democrat"})
 
 >RETURN bill
 
@@ -31,9 +31,13 @@ Voting results on all bills:
 >LIMIT 100;
 
 todo:
+ - add endpoint for bills
+ - add endpoint for legislators
+ - add legislator detailed
+ - add bill detail
+ - add votes data
  - add some organizations (senate, house; dem, rep; committees)
  - add some tags (already in bill data, ex: all bills dealing with taxation, military)
- - add some express magic to get an api going
 
 done:
 - load legislation
@@ -41,3 +45,4 @@ done:
 - show sponsorship
 - legislator party
 - load voting data
+- add some express magic to get an api going
