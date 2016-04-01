@@ -5,13 +5,30 @@ interesting queries:
 
 Bills introduced by democrats:
 >MATCH (bill:BILL)<-[:SPONSOR]-(legislator:LEGISLATOR)-[:MEMBER]->(party:PARTY {party:"Democrat"}) 
+
 >RETURN bill
 
 All votes on all bills
 >MATCH (voter:LEGISLATOR)-[vote:VOTED]->(att:VOTE_ATTEMPT)
+
 >MATCH (att)-[:ATTEMPT_FOR]->(bill:BILL)
+
 >RETURN voter, vote, bill
+
 >LIMIT 50;
+
+Voting results on all bills:
+>MATCH (att:VOTE_ATTEMPT)-[:ATTEMPT_FOR]->(bill:BILL)
+
+>MATCH (voterYea:LEGISLATOR)-[voteFor:VOTED {type:"Yea"}]->(att)
+
+>WITH count(voterYea) AS yeas, att, bill
+
+>MATCH (voterNay:LEGISLATOR)-[voteFor:VOTED {type:"Nay"}]->(att)
+
+>return bill.title,yeas, count(voterNay) as Nays, att.requires,  att.result
+
+>LIMIT 100;
 
 todo:
  - add some organizations (senate, house; dem, rep; committees)
