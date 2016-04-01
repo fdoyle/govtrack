@@ -20,7 +20,7 @@ var QUERY_INSERT_VOTE =
     "MATCH (bill:BILL {id:{billIdData}}) " +
     "MERGE (attempt:VOTE_ATTEMPT {result:{attemptData}.result, requires:{attemptData}.requires, date:{attemptData}.date, question:{attemptData}.question, url:{attemptData}.url, id:{attemptData}.id}) " +
     "CREATE (voter)-[:VOTED {data}]->(attempt) " +
-    "CREATE (attempt)-[:ATTEMPT_FOR]->(bill) " +
+    "MERGE (attempt)-[:ATTEMPT_FOR]->(bill) " +
     "RETURN voter, bill";
 
 var db = new neo4j.GraphDatabase('http://neo4j:p4ssw0rd@localhost:7474');
@@ -272,6 +272,9 @@ function loadVotesOfTypeToDatabase(attemptData, votesOnBillCollection, type, cal
 
 function loadVoteIntoDatabase(attemptDao, voteDao, voterIdValue, callback) {
     console.log("loading vote into database")
+    console.log("attemptDao "+ JSON.stringify(attemptDao, null, 2));
+    console.log("voteDao " + JSON.stringify(voteDao, null, 2));
+    console.log("voterIdValue " + voterIdValue);
     db.cypher({
         query: QUERY_INSERT_VOTE,
         params: {
